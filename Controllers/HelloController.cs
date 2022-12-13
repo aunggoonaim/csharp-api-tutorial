@@ -1,3 +1,4 @@
+using csharp_api_tutorial.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace csharp_api_tutorial.Controllers;
@@ -12,10 +13,12 @@ public class HelloController : ControllerBase
     };
 
     private readonly ILogger<HelloController> _logger;
+    private readonly TutorialContext _context;
 
-    public HelloController(ILogger<HelloController> logger)
+    public HelloController(ILogger<HelloController> logger, TutorialContext context)
     {
         _logger = logger;
+        _context = context;
     }
 
     [HttpGet]
