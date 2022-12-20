@@ -9,7 +9,8 @@ namespace csharp_api_tutorial.MapperProfile
         public AutoMapperExcel()
         {
             CreateMap<ExportUserDataExcelDTO, user_info>();
-            CreateMap<user_info, ExportUserDataExcelDTO>();
+            CreateMap<user_info, ExportUserDataExcelDTO>()
+                .ForMember(x => x.role_name, x => x.MapFrom(y => y.user_role.role_name));
         }
     }
 }
