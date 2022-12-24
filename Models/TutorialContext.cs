@@ -22,7 +22,7 @@ namespace csharp_api_tutorial.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql("server=localhost;uid=root;pwd=p@$$w0rd;database=tutorial", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.31-mysql"));
+                optionsBuilder.UseMySql("server=localhost;uid=root;pwd=passw0rd;database=tutorial", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.31-mysql"));
             }
         }
 
