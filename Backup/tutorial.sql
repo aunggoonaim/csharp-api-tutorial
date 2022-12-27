@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `user_role`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_role` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `role_name` varchar(60) COLLATE utf8mb3_unicode_ci NOT NULL,
   `is_actived` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)

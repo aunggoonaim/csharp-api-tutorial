@@ -7,9 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace csharp_api_tutorial.Models
 {
     [Table("user_info")]
-    [Index(nameof(firstname), Name = "firstname_UNIQUE", IsUnique = true)]
-    [Index(nameof(lastname), Name = "lastname_UNIQUE", IsUnique = true)]
-    [Index(nameof(user_role_id), Name = "user_role_idx")]
+    [Index(nameof(user_role_id), Name = "user_role_id_idx")]
     public partial class user_info
     {
         [Key]

@@ -11,18 +11,20 @@ namespace csharp_api_tutorial.Models
         {
         }
 
-        public TutorialContext(DbContextOptions<TutorialContext> options) : base(options)
+        public TutorialContext(DbContextOptions<TutorialContext> options)
+            : base(options)
         {
         }
 
         public virtual DbSet<user_info> user_infos { get; set; } = null!;
+        public virtual DbSet<user_info_address> user_info_addresses { get; set; } = null!;
         public virtual DbSet<user_role> user_roles { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql("server=localhost;uid=root;pwd=passw0rd;database=tutorial", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.31-mysql"));
+                optionsBuilder.UseMySql("server=localhost;uid=root;pwd=p@$$w0rd;database=tutorial", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.31-mysql"));
             }
         }
 
@@ -36,7 +38,7 @@ namespace csharp_api_tutorial.Models
                 entity.HasOne(d => d.user_role)
                     .WithMany(p => p.user_infos)
                     .HasForeignKey(d => d.user_role_id)
-                    .HasConstraintName("user_role");
+                    .HasConstraintName("user_role_id");
             });
 
             OnModelCreatingPartial(modelBuilder);
