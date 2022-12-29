@@ -17,7 +17,6 @@ namespace csharp_api_tutorial.Models
         }
 
         public virtual DbSet<user_info> user_infos { get; set; } = null!;
-        public virtual DbSet<user_info_address> user_info_addresses { get; set; } = null!;
         public virtual DbSet<user_role> user_roles { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
