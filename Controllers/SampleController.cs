@@ -31,7 +31,7 @@ public class SampleController : ControllerBase
     [Route("")]
     public IActionResult Get()
     {
-        return Ok(_context.user_infos.Include(x => x.user_role).OrderByDescending(x => x.id).ToList());
+        return Ok(_context.user_infos.ToList());
     }
 
     [HttpPost]
@@ -65,7 +65,7 @@ public class SampleController : ControllerBase
                 dto.lastname = worksheet.Cell("B" + RowIndex).Value.ToString() ?? string.Empty;
                 dto.email = worksheet.Cell("C" + RowIndex).Value.ToString() ?? string.Empty;
                 dto.password_hash = "e10adc3949ba59abbe56e057f20f883e";
-                dto.user_role_id = roles.Where(x => x.role_name == role_name).First().id;
+                // dto.user_role_id = roles.Where(x => x.role_name == role_name).First().id;
                 dto.is_actived = true;
 
                 _context.user_infos.Add(dto);
@@ -83,7 +83,7 @@ public class SampleController : ControllerBase
         using (var workbook = new XLWorkbook())
         {
             var listData = _context.user_infos
-                .Include(x => x.user_role)
+                // .Include(x => x.user_role)
                 .OrderByDescending(x => x.id)
                 .ToList();
 

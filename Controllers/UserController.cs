@@ -36,7 +36,7 @@ public class UserController : ControllerBase
             firstname = form.firstname,
             lastname = form.lastname,
             email = form.email,
-            user_role_id = 1,
+            // user_role_id = 1,
             is_actived = true,
             password_hash = "",
         });
@@ -82,7 +82,7 @@ public class UserController : ControllerBase
         using (var workbook = new XLWorkbook())
         {
             var listData = _context.user_infos
-                .Include(x => x.user_role)
+                // .Include(x => x.user_role)
                 .OrderByDescending(x => x.id)
                 .ToList();
 
