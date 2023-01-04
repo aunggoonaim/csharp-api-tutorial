@@ -16,6 +16,10 @@ namespace csharp_api_tutorial.Models
         {
         }
 
+        public virtual DbSet<ms_company> ms_companies { get; set; } = null!;
+        public virtual DbSet<ms_company_organize> ms_company_organizes { get; set; } = null!;
+        public virtual DbSet<ms_product> ms_products { get; set; } = null!;
+        public virtual DbSet<ms_product_unit_type> ms_product_unit_types { get; set; } = null!;
         public virtual DbSet<user_address_info> user_address_infos { get; set; } = null!;
         public virtual DbSet<user_info> user_infos { get; set; } = null!;
         public virtual DbSet<user_role> user_roles { get; set; } = null!;
