@@ -1,9 +1,13 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using AutoMapper;
 using ClosedXML.Excel;
 using csharp_api_tutorial.Dto;
 using csharp_api_tutorial.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace csharp_api_tutorial.Controllers;
 
@@ -14,12 +18,14 @@ public class UserController : ControllerBase
     private readonly ILogger<UserController> _logger;
     private readonly TutorialContext _context;
     private readonly IMapper _mapper;
+    private readonly IConfiguration _configuration;
 
-    public UserController(ILogger<UserController> logger, TutorialContext context, IMapper mapper)
+    public UserController(ILogger<UserController> logger, IConfiguration configuration, TutorialContext context, IMapper mapper)
     {
         _logger = logger;
         _context = context;
         _mapper = mapper;
+        _configuration = configuration;
     }
 
     [HttpGet]
@@ -43,6 +49,57 @@ public class UserController : ControllerBase
         _context.SaveChanges();
 
         return Ok(form);
+    }
+
+    [HttpPost]
+    [Route("login")]
+    public async Task<IActionResult> PostUserLogin([FromBody] UserLoginModel form)
+    {
+        if (form.email is not null && form.password is not null)
+        {
+            var userData = await _context.user_infos
+                .Where(x => x.email == form.email && x.password_hash == form.password)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (userData is null)
+            {
+                throw new Exception("ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง !");
+            }
+
+            var jwtKey = _configuration["JwtSetting:Key"];
+            if (jwtKey is null)
+            {
+                throw new Exception("Jwt key cannot be null !");
+            }
+
+            var issuer = _configuration["JwtSetting:Issuer"];
+            var audience = _configuration["JwtSetting:Audience"];
+            var key = System.Text.Encoding.ASCII.GetBytes(jwtKey);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                new Claim("id", userData.id.ToString()),
+                new Claim("email", userData.email),
+                // new Claim("user_id", userData.id),
+                new Claim(JwtRegisteredClaimNames.Jti,
+                Guid.NewGuid().ToString())
+             }),
+                Expires = DateTime.UtcNow.AddMinutes(30),
+                Issuer = issuer,
+                Audience = audience,
+                SigningCredentials = new SigningCredentials
+                (new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha512Signature)
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var jwtToken = tokenHandler.WriteToken(token);
+            var stringToken = tokenHandler.WriteToken(token);
+            return Ok(new { token = stringToken });
+        }
+        return Unauthorized();
     }
 
     [HttpPut]

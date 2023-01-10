@@ -11,8 +11,7 @@ namespace csharp_api_tutorial.Models
         {
         }
 
-        public TutorialContext(DbContextOptions<TutorialContext> options)
-            : base(options)
+        public TutorialContext(DbContextOptions<TutorialContext> options) : base(options)
         {
         }
 
