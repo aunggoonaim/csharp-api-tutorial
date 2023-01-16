@@ -1,5 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using AutoMapper;
 using ClosedXML.Excel;
 using csharp_api_tutorial.Dto;
@@ -58,13 +60,22 @@ public class UserController : ControllerBase
         if (form.email is not null && form.password is not null)
         {
             var userData = await _context.user_infos
-                .Where(x => x.email == form.email && x.password_hash == form.password)
+                .Where(x => x.email == form.email)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
             if (userData is null)
             {
                 throw new Exception("ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง !");
+            }
+
+            using (SHA512 sha512 = new SHA512Managed())
+            {
+                var comparePwd = Convert.ToBase64String(sha512.ComputeHash(Encoding.UTF8.GetBytes(form.password)));
+                if (userData.password_hash != comparePwd)
+                {
+                    throw new Exception("ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง !");
+                }
             }
 
             var jwtKey = _configuration["JwtSetting:Key"];
@@ -98,6 +109,42 @@ public class UserController : ControllerBase
             var jwtToken = tokenHandler.WriteToken(token);
             var stringToken = tokenHandler.WriteToken(token);
             return Ok(new { token = stringToken });
+        }
+        return Unauthorized();
+    }
+
+    [HttpPost]
+    [Route("register")]
+    public async Task<IActionResult> PostUserRegister([FromBody] UserRegisterModel form)
+    {
+        if (form.email is not null && form.password is not null)
+        {
+            var userData = await _context.user_infos
+                .Where(x => x.email == form.email)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (userData is not null)
+            {
+                throw new Exception("อีเมลนี้ถูกใช้งานแล้ว !");
+            }
+
+            using (SHA512 sha512 = new SHA512Managed())
+            {
+                var model = new user_info()
+                {
+                    firstname = form.firstname,
+                    lastname = form.lastname,
+                    email = form.email,
+                    password_hash = Convert.ToBase64String(sha512.ComputeHash(Encoding.UTF8.GetBytes(form.password))),
+                    is_actived = true,
+                    created_date = DateTime.Now
+                };
+                _context.user_infos.Add(model);
+                await _context.SaveChangesAsync();
+
+                return Created("PostUserRegister", model);
+            }
         }
         return Unauthorized();
     }
