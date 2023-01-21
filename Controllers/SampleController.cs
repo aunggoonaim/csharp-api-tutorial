@@ -1,5 +1,6 @@
 using AutoMapper;
 using ClosedXML.Excel;
+using csharp_api_tutorial.Dependency.Interface;
 using csharp_api_tutorial.Dto;
 using csharp_api_tutorial.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -17,61 +18,78 @@ public class SampleController : ControllerBase
     };
 
     private readonly ILogger<SampleController> _logger;
+    private readonly IPaymentService _paymentService;
     private readonly TutorialContext _context;
     private readonly IMapper _mapper;
 
-    public SampleController(ILogger<SampleController> logger, TutorialContext context, IMapper mapper)
+    public SampleController(ILogger<SampleController> logger, IPaymentService paymentService, TutorialContext context, IMapper mapper)
     {
         _logger = logger;
         _context = context;
         _mapper = mapper;
+        _paymentService = paymentService;
     }
 
     [HttpGet]
     [Route("")]
-    public IActionResult Get()
+    public async Task<IActionResult> Get()
     {
-        return Ok(_context.user_infos.ToList());
+        return Ok(await _paymentService.GetAsync());
     }
 
     [HttpPost]
     [Route("import")]
-    public IActionResult PostImport(IFormFile file)
+    public async Task<IActionResult> PostImport(IFormFile file)
     {
         using (var workbook = new XLWorkbook(file.OpenReadStream()))
         {
-            var listData = _context.user_infos.ToList();
-            _context.user_infos.RemoveRange(listData);
-
-            var worksheet = workbook.Worksheets.First();
-
-            var roles = _context.user_roles.ToList();
-
-            var MaxRow = worksheet.RowsUsed().Count(); ;
-
-            for (int i = 1; i < MaxRow; i++)
+            await _paymentService.CreateAsync(new MongoDB.PaymentModel()
             {
-                var RowIndex = i + 1;
-                var dto = new user_info();
+                PaymentNo = "000001",
+                Price = 100,
+                CreateBy = "Miniboy",
+                CreateDate = DateTime.Now
+            });
+            // var listData = _context.user_infos.ToList();
+            // _context.user_infos.RemoveRange(listData);
 
-                var role_name = worksheet.Cell("D" + RowIndex).Value.ToString() ?? string.Empty;
+            // var worksheet = workbook.Worksheets.First();
 
-                if (string.IsNullOrEmpty(role_name))
-                {
-                    break;
-                }
+            // var roles = _context.user_roles.ToList();
 
-                dto.firstname = worksheet.Cell("A" + RowIndex).Value.ToString() ?? string.Empty;
-                dto.lastname = worksheet.Cell("B" + RowIndex).Value.ToString() ?? string.Empty;
-                dto.email = worksheet.Cell("C" + RowIndex).Value.ToString() ?? string.Empty;
-                dto.password_hash = "e10adc3949ba59abbe56e057f20f883e";
-                // dto.user_role_id = roles.Where(x => x.role_name == role_name).First().id;
-                dto.is_actived = true;
+            // var MaxRow = worksheet.RowsUsed().Count(); ;
 
-                _context.user_infos.Add(dto);
-            }
+            // for (int i = 1; i < MaxRow; i++)
+            // {
+            //     var RowIndex = i + 1;
+            //     var dto = new user_info();
 
-            _context.SaveChanges();
+            //     var role_name = worksheet.Cell("D" + RowIndex).Value.ToString() ?? string.Empty;
+
+            //     if (string.IsNullOrEmpty(role_name))
+            //     {
+            //         break;
+            //     }
+
+            //     dto.firstname = worksheet.Cell("A" + RowIndex).Value.ToString() ?? string.Empty;
+            //     dto.lastname = worksheet.Cell("B" + RowIndex).Value.ToString() ?? string.Empty;
+            //     dto.email = worksheet.Cell("C" + RowIndex).Value.ToString() ?? string.Empty;
+            //     dto.password_hash = "e10adc3949ba59abbe56e057f20f883e";
+            //     // dto.user_role_id = roles.Where(x => x.role_name == role_name).First().id;
+            //     dto.is_actived = true;
+
+            //     _paymentService.CreateAsync(new MongoDB.PaymentModel()
+            //     {
+            //         PaymentNo = "000001",
+            //         Price = 100,
+            //         CreateBy = string.Concat(dto.firstname, " ", dto.lastname),
+            //         CreateDate = DateTime.Now
+            //     });
+
+            //     _context.user_infos.Add(dto);
+            // }
+
+            // _context.SaveChanges();
             return Ok();
         }
     }

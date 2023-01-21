@@ -1,3 +1,5 @@
+using csharp_api_tutorial.Dependency.Interface;
+using csharp_api_tutorial.Dependency.Service;
 using csharp_api_tutorial.Dto;
 using csharp_api_tutorial.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddDbContext<TutorialContext>();
+
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
