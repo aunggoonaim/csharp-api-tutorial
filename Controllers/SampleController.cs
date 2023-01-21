@@ -3,8 +3,10 @@ using ClosedXML.Excel;
 using csharp_api_tutorial.Dependency.Interface;
 using csharp_api_tutorial.Dto;
 using csharp_api_tutorial.Models;
+using csharp_api_tutorial.MongoDB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace csharp_api_tutorial.Controllers;
 
@@ -18,13 +20,15 @@ public class SampleController : ControllerBase
     };
 
     private readonly ILogger<SampleController> _logger;
+    private readonly IMemoryCache _cache;
     private readonly IPaymentService _paymentService;
     private readonly TutorialContext _context;
     private readonly IMapper _mapper;
 
-    public SampleController(ILogger<SampleController> logger, IPaymentService paymentService, TutorialContext context, IMapper mapper)
+    public SampleController(ILogger<SampleController> logger, IMemoryCache cache, IPaymentService paymentService, TutorialContext context, IMapper mapper)
     {
         _logger = logger;
+        _cache = cache;
         _context = context;
         _mapper = mapper;
         _paymentService = paymentService;
@@ -34,7 +38,17 @@ public class SampleController : ControllerBase
     [Route("")]
     public async Task<IActionResult> Get()
     {
-        return Ok(await _paymentService.GetAsync());
+        var keyGetSampleData = "KeyGetSampleData";
+        if (!_cache.TryGetValue(keyGetSampleData, out List<PaymentModel>? cacheValue))
+        {
+            cacheValue = await _paymentService.GetAsync();
+
+            var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(1));
+
+            _cache.Set(keyGetSampleData, cacheValue, cacheEntryOptions);
+        }
+
+        return Ok(cacheValue);
     }
 
     [HttpPost]

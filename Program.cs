@@ -15,6 +15,8 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddCors();
 
 builder.Services.AddOptions<JwtSetting>("JwtSetting");
