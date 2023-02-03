@@ -9,15 +9,17 @@ namespace csharp_api_tutorial.Controllers;
 [Route("Product")]
 public class ProductController : ControllerBase
 {
+    private readonly IWebHostEnvironment _environment;
     private readonly ILogger<ProductController> _logger;
     private readonly TutorialContext _context;
     private readonly IMapper _mapper;
 
-    public ProductController(ILogger<ProductController> logger, TutorialContext context, IMapper mapper)
+    public ProductController(ILogger<ProductController> logger, IWebHostEnvironment environment, TutorialContext context, IMapper mapper)
     {
         _logger = logger;
         _context = context;
         _mapper = mapper;
+        _environment = environment;
     }
 
     [HttpGet]
@@ -48,6 +50,30 @@ public class ProductController : ControllerBase
         _context.ms_products.Add(form);
         await _context.SaveChangesAsync();
         return Created("CreateProduct", form);
+    }
+
+    [HttpPost]
+    [Route("uploadImage")]
+    public async Task<IActionResult> UploadImageProduct()
+    {
+        var file = Request.Form.Files[0];
+        using (var ms = new MemoryStream())
+        {
+            using (var fs = file.OpenReadStream())
+            {
+                fs.CopyTo(ms);
+                var fileType = file.Name.Split('.').Last();
+                var fileName = string.Concat(Guid.NewGuid().ToString(), "." , fileType);
+                var directory = Path.Combine(_environment.ContentRootPath, "Upload");
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                var path = Path.Combine(directory, fileName);
+                await System.IO.File.WriteAllBytesAsync(path, ms.ToArray());
+                return Ok(new { fileName });
+            }
+        }
     }
 
     [HttpPut]
